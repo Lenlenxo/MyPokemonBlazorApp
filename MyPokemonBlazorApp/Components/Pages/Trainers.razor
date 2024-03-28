@@ -11,6 +11,48 @@
     </div>
 </div>
 
+<nav aria-label="Page navigation example">
+    <ul class="pagination">
+        <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+        <li class="page-item"><a class="page-link" href="#">1</a></li>
+        <li class="page-item"><a class="page-link" href="#">2</a></li>
+        <li class="page-item"><a class="page-link" href="#">3</a></li>
+        <li class="page-item"><a class="page-link" href="#">Next</a></li>
+    </ul>
+</nav>
+@if (showForm)
+{
+    <div class="card">
+        <div class="card-body bg-light">
+            <h4 class="class-title">
+                @(model.Id == 0 ? "Add Trainer" : "Edit Trainer")
+            </h4>
+            <EditForm OnValidSubmit="Submit" EditContext="editContext">
+                <DataAnnotationsValidator />
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="name" class="form-label">Name</label>
+                        <InputText class="form-control" placeholder="Name" @bind-Value="Model.Name" />
+                        <ValidationMessage For="@(() => Model.Name)" />
+                    </div>
+                    <div class="col-md-6">
+                        <label for="type" class="form-label">Companion</label>
+                        <InputSelect class="form-select" placeholder="Companion" @bind-Value="companionId">
+                            @foreach (var pokemon in pokemons)
+                            {
+                                <option value="@pokemon.Id">@pokemon.Name</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => Model.Companion)" />
+                    </div>
+                    <div class="col-md-12">
+                        <button type="submit" class="btn btn-primary float-end">@(Model.Id == 0 ? "Add Trainer" : "Save Changes")</button>
+                    </div>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
 
 <table class="table">
     <thead>
@@ -42,6 +84,7 @@
 </table>
 @code {
     [Parameter]
+
     public EventCallback<bool> OnSaved { get; set; }
 
     private List<Trainer>? trainers;
@@ -67,6 +110,9 @@
 
     private async Task Submit()
     {
+
+        Model.Companion = pokemons.Single(p => p.Id == companionId);
+
         if (model.Id == 0)
             DbContext.Trainers.Add(model);
         else
@@ -74,11 +120,15 @@
 
         await DbContext.SaveChangesAsync();
         await Refresh();
+
+       
     }
 
     protected override async Task OnInitializedAsync()
     {
         await Refresh();
+
+        pokemons = await DbContext.Pokemons.OrderBy(p => p.Name).ToListAsync();
     }
 
     private async Task Refresh()
@@ -95,5 +145,23 @@
         await DbContext.SaveChangesAsync();
         await Refresh();
     }
+    public Trainer Model
+    {
+        get
+        {
+            return model;
+        }
+        set
+        {
+            model = value ?? new Trainer();
+            if (model.Companion is null)
+                model.Companion = new Pokemon();
+            companionId = model.Companion.Id;
+            editContext = new(model);
+        }
+    }
+   
+    
+
 }
 
