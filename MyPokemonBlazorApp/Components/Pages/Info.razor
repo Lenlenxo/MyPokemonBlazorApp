@@ -57,15 +57,19 @@ else
 @code {
     [Parameter]
     public int Id { get; set; }
-
+    private string? imageUrl { get; set;}
 
     private Pokemon? pokemon;
 
-    private string? imageUrl { get; set; }
     protected override void OnInitialized()
     {
         pokemon = DbContext.Pokemons.SingleOrDefault(p => p.Id == Id);
-        imageUrl = ImageGrabber.GetImageUrl(pokemon);
+    }
+
+    protected override void OnParametersSet()
+    {
+        imageUrl = PokemonImageGrabber.GetImageUrl(pokemon);
+        base.OnParametersSet();
     }
 }
 

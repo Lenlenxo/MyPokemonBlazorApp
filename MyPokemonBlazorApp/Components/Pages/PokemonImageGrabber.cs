@@ -1,6 +1,4 @@
-﻿using MyPokemonBlazorApp.Model;
-using System.Xml.Linq;
-
+﻿
 public class PokemonImageGrabber
 {
     private const string NOT_FOUND = "img/notfound.png";
